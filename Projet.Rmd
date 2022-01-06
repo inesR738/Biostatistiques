@@ -25,6 +25,7 @@ library(modelsummary)
 
 ```{r, echo=FALSE}
 Intoxications <- read_excel("Intoxications.xls") 
+colnames(Intoxications) <- c("id", "Sexe", "Age", "Boeuf", "Oeuf", "Eclair", "Eau", "Nausee", "Vomi", "Douleur", "Diarrhee")
 ```
 
 # Introduction
@@ -63,28 +64,48 @@ Afin de mieux comprendre ces données, nous allons commencer par en faire une pr
 
 Regardons si notre jeu de donnée contient des données manquantes :
 
-```{r}
-Intoxications <- read_excel("Intoxications.xls")
-colnames(Intoxications) <- c("id", "Sexe", "Age", "Boeuf", "Oeuf", "Eclair", "Eau", "Nausee", "Vomi", "Douleur", "Diarrhee")
-Intoxications$Sexe=factor(Intoxications$Sexe)
+```{r, echo=FALSE}
+# Intoxications$Eclair[Intoxications$Eclair==90]<-NA
+# #Intoxications$éclair[Intoxications$éclair==80]<-NA
+# Intoxications$Nausee[Intoxications$Nausee == 99] <- NA
+# Intoxications$Vomi[Intoxications$Vomi == 99] <- NA
+# Intoxications$Douleur[Intoxications$Douleur == 99] <- NA
+# Intoxications$Diarrhee[Intoxications$Diarrhee == 99] <- NA
+# Intoxications$Boeuf[Intoxications$Boeuf==9]<-NA
+# Intoxications$Oeuf[Intoxications$Oeuf==9]<-NA
+# Intoxications$Eau[Intoxications$Eau == 9] <- NA
+# sum(is.na(Intoxications))
 
-Intoxications$Eclair[Intoxications$Eclair==90]<-NA
-#Intoxications$éclair[Intoxications$éclair==80]<-NA
-Intoxications$Nausee[Intoxications$Nausee == 99] <- NA
-Intoxications$Vomi[Intoxications$Vomi == 99] <- NA
-Intoxications$Douleur[Intoxications$Douleur == 99] <- NA
-Intoxications$Diarrhee[Intoxications$Diarrhee == 99] <- NA
-Intoxications$Boeuf[Intoxications$Boeuf==9]<-NA
-Intoxications$Oeuf[Intoxications$Oeuf==9]<-NA
-Intoxications$Eau[Intoxications$Eau == 9] <- NA
-sum(is.na(Intoxications))
+Donn_manq <- Intoxications %>% 
+  filter(Age == 99 |
+         Boeuf == 9 |
+         Oeuf == 9 |
+         Eclair == 90 |
+         Eclair == 80 |
+         Eau == 9) %>% 
+  mutate(Eclair = if_else(Eclair == 90,
+                          NA_real_,
+                          as.numeric(Eclair)),
+         Boeuf = if_else(Boeuf == 9,
+                          NA_integer_,
+                          as.integer(Boeuf)),
+         Oeuf = if_else(Oeuf == 9,
+                          NA_integer_,
+                          as.integer(Oeuf)),
+         Age = if_else(Age == 99,
+                          NA_integer_,
+                          as.integer(Boeuf)),
+         Eau = if_else(Eau == 9,
+                          NA_integer_,
+                          as.integer(Eau)))
 
+Donn_manq %>% nrow()
+sum(is.na(Donn_manq))
 ```
-Après recodage des données manquantes, on observe qu’il y a dans la table 133 données 
-manquantes. Parmis ces 133 valeurs manquantes, il y en a 117 qui appartiennent à la question sur les éclairs.  
+Après recodage des données manquantes, on observe qu’il y a dans la table 183 individus avec au moins une donnée manquante. Parmis les 198 valeurs manquantes, il y en a 117 qui appartiennent à la question sur les éclairs.  
   
-Ainsi, comme on a peu d'individus avec une ou des informations manquantes ($\frac{133}{1094} \approx 12.2\%$), on a décidé de les retirer du jeu de données.  
-  
+Ainsi, comme on a peu d'individus avec une ou des informations manquantes ($\frac{183}{1094} \approx 16.7\%$), on a décidé de les retirer du jeu de données.  
+On aurait pu remplacer les valeurs pour les individus ne se souvenant plus du nombre d'éclairs qu'ils ont mangé par la médiane de cette variable, sauf qu'après analyse les 5 individus n'ayant plus de souvenir de la quantité d'éclairs ont tous au moins une autre variable avec une donnée manquante.
   
 Lecture des données :
 ```{r, echo=FALSE}
@@ -125,62 +146,34 @@ Intoxications %>% summary()
 ```
 Nous allons d’abord observer la répartition des âges des hommes et des femmes au sein de l’échantillon.
 ```{r}
-ggplot(Intoxications, aes(group = Sexe, x = Sexe, y = Age, color=Sexe)) +
+ggplot(Intoxications, aes(group = Sexe, x = Sexe, y = Age, fill=Sexe)) +
  geom_boxplot() +
  ggtitle("Répartition des âges selon le sexe")
 ```
+
 Les femmes sont codées par un 0 et les hommes par un 1.  
 L’échantillon est composé de 721 hommes et 373 femmes.  
 On peut supposer que l’échantillon est représentatif du public de la manifestation puisqu’on a un échantillon de taille importante.  
 Alors on observe une population plutôt jeune. Les femmes ont en moyenne 15 ans et aux alentours de 18 ans pour les hommes.   
 Nous allons voir à présent les différences de consommations des plats mise en cause dans les intoxications alimentaires constatées.  
 
-```{r, echo=FALSE}
-Intoxications <- read_excel("Intoxications.xls") 
-colnames(Intoxications) <- c("id", "Sexe", "Age", "Boeuf", "Oeuf", "Eclair", "Eau", "Nausee", "Vomi", "Douleur", "Diarrhee")
-```
 
 ```{r}
-c(sum(Intoxications$Boeuf, na.rm=T), sum(Intoxications$Oeuf, na.rm=T), sum(Intoxications$Eau, na.rm=T))
+c(Intoxications$Boeuf %>% as.integer() %>% -1 %>% sum(),
+  Intoxications$Oeuf %>% as.integer() %>% -1 %>% sum(),
+  Intoxications$Eau %>% as.integer() %>% -1 %>% sum())*100/nrow(Intoxications)
 ```
 ```{r}
 table(Intoxications$Eclair)
 ```
 ```{r}
-sum(Intoxications$Boeuf & Intoxications$Oeuf & Intoxications$Eau, na.rm=T)
+sum(Intoxications$Boeuf %>% as.integer() %>% -1 & Intoxications$Oeuf %>% as.integer() %>% -1 & Intoxications$Eau %>% as.integer() %>% -1, na.rm=T)
 ```
 Au sein de l’échantillon, chaque plat a été consommé par une large proportion d’individus.  
-Le boeuf au curry, l’oeuf frit et l’eau ont été pris par environ 1000 individus chacun, et 950 personnes ont consommé les trois. En plus petite proportion, 683 personnes (Echantillon totale - personne n'ayant pas mangé d'éclair - données manquantes =  1094-294-117 = 683) ont pris des éclairs, entre une moitié et 8 éclairs. 
+Le boeuf au curry, l’oeuf frit et l’eau ont été pris par environ 1000 individus chacun, et 800 (soit $\approx 87.8\%$ ) personnes ont consommé les trois. En plus petite proportion, 683 personnes (Echantillon totale - personne n'ayant pas mangé d'éclair - données manquantes =  1094-294-117 = 683) ont pris des éclairs, entre une moitié et 8 éclairs. 
 On observe également que 5 personnes ayant déclaré avoir mangé des éclairs ne se souviennent plus de combien.  
 
 
-
-
-
-
-```{r, echo=FALSE}
-Intoxications <- Intoxications %>%
-  filter(Age != 99,
-         Boeuf != 9,
-         Oeuf != 9,
-         Eclair != 90,
-         Eclair != 80,
-         Eau != 9) %>% 
-  mutate(Symptomes = Nausee + Vomi + Douleur + Diarrhee,
-         Sexe = as.factor(Sexe),
-         Nausee = as.factor(Nausee),
-         Vomi = as.factor(Vomi),
-         Douleur = as.factor(Douleur),
-         Diarrhee = as.factor(Diarrhee), 
-         Eclair = as.numeric(Eclair),
-         Boeuf = as.factor(Boeuf),
-         Oeuf = as.factor(Oeuf),
-         Eau = as.factor(Eau),
-         Malade = as.factor(if_else(Symptomes >= 1,
-                             1,
-                             0)))
-
-```
 
 
 ```{r, echo=FALSE}
@@ -289,8 +282,19 @@ fitforw <- stepAIC(object = g,
 summary(fitforw)
 ```
 
-```{r}
-confint(fitforw)
+```{r, echo=FALSE, results='hide'}
+CI <- as.data.frame(confint(fitforw))
+```
+
+```{r, echo=FALSE}
+ggplot() +
+  geom_errorbar(data = CI,
+                aes(x = row.names(CI),
+                    ymin = CI[,1],
+                    ymax = CI[,2],
+                    colour = row.names(CI))) +
+  xlab("Covariables") +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.7))
 ```
 
 \newpage
@@ -411,8 +415,10 @@ ggplot() +
                     ymin = CI[,1],
                     ymax = CI[,2],
                     colour = row.names(CI))) +
-  xlab("Covariables")
+  xlab("Covariables") +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.7))
 ```
+
 
 
 
