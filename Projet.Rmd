@@ -63,7 +63,6 @@ Afin de mieux comprendre ces données, nous allons commencer par en faire une pr
 #	Statistiques descriptives
 
 Regardons si notre jeu de donnée contient des données manquantes :
-
 ```{r, echo=FALSE}
 # Intoxications$Eclair[Intoxications$Eclair==90]<-NA
 # #Intoxications$éclair[Intoxications$éclair==80]<-NA
@@ -75,7 +74,10 @@ Regardons si notre jeu de donnée contient des données manquantes :
 # Intoxications$Oeuf[Intoxications$Oeuf==9]<-NA
 # Intoxications$Eau[Intoxications$Eau == 9] <- NA
 # sum(is.na(Intoxications))
+```
 
+
+```{r}
 Donn_manq <- Intoxications %>% 
   filter(Age == 99 |
          Boeuf == 9 |
@@ -170,10 +172,23 @@ table(Intoxications$Eclair)
 sum(Intoxications$Boeuf %>% as.integer() %>% -1 & Intoxications$Oeuf %>% as.integer() %>% -1 & Intoxications$Eau %>% as.integer() %>% -1, na.rm=T)
 ```
 Au sein de l’échantillon, chaque plat a été consommé par une large proportion d’individus.  
-Le boeuf au curry, l’oeuf frit et l’eau ont été pris par environ 1000 individus chacun, et 800 (soit $\approx 87.8\%$ ) personnes ont consommé les trois. En plus petite proportion, 683 personnes (Echantillon totale - personne n'ayant pas mangé d'éclair - données manquantes =  1094-294-117 = 683) ont pris des éclairs, entre une moitié et 8 éclairs. 
-On observe également que 5 personnes ayant déclaré avoir mangé des éclairs ne se souviennent plus de combien.  
+Le boeuf au curry, l’oeuf frit et l’eau ont été pris par environ 100 individus chacun, et 800 (soit $\approx 87.8\%$ ) personnes ont consommé les trois. On a également, 830 personnes (Echantillon totale - personne n'ayant pas mangé d'éclair =  1094-264 = 830) ayant consommées des éclairs, entre une moitié et 20 éclairs.  
 
+Nous allons nous intéresser à présent à une analyse similaire sur les différents symptômes. 
+```{r}
+c(Intoxications$Nausee %>% as.integer() %>% -1 %>% sum(),
+  Intoxications$Vomi %>% as.integer() %>% -1 %>% sum(),
+  Intoxications$Douleur %>% as.integer() %>% -1 %>% sum(),
+  Intoxications$Diarrhee %>% as.integer() %>% -1 %>% sum())*100/nrow(Intoxications)
+```
 
+Chacun des symptômes ont été ressentis par 21 à 39 personnes. Le symptôme le plus 
+fréquent étant la nausée, le moins fréquent la diahrée. 201 personnes soit presque 20% de l’échantillon ont ressenti tous les symptômes listés. 
+
+```{r}
+sum(Intoxications$Nausee %>% as.integer() %>% -1 & Intoxications$Vomi %>% as.integer() %>% -1 & Intoxications$Douleur %>% as.integer() %>% -1 &Intoxications$Diarrhee %>% as.integer() %>% -1, na.rm=T)
+```
+170 personnes soit presque 15% de l’échantillon ont ressentis tous les symptômes.
 
 
 ```{r, echo=FALSE}
@@ -300,6 +315,9 @@ ggplot() +
 \newpage
 # Regression polytomique ordonnée
 
+Dans cette partie nous allons étudier l’influence de la consommation des 
+différents aliments, de l'âge et du sexe sur l’apparition des symptômes étudiés. Pour cela nous allons utiliser des régressions polytomiques non ordonnées.
+
 ```{r, echo=FALSE}
 g1 <- ggplot() +
   geom_bar(data = Intoxications,
@@ -419,8 +437,54 @@ ggplot() +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.7))
 ```
 
+\newpage
 
+# Régression linéaire généralisée
 
+Nous aimerions savoir si le fait de manger plus ou moins d’éclairs à eu une influence sur l’apparition des symptômes étudiés. Pour cela nous allons utiliser une régression linéaire généralisée expliquant chaque symptôme grâce à la variable éclair.  
 
+Pour cette partie, on considérera les personnes ne se souvenant plus du nombre d’éclairs consommés comme des valeurs manquantes puisqu’ici c’est le nombre d’éclairs mangés qui importe.  
 
+```{r}
+attach(Intoxications)
+reg_gen_Nausee <- glm(Nausee~Eclair, family= binomial, data=Intoxications)
+reg_gen_Nausee
+```
 
+```{r}
+confint(reg_gen_Nausee)
+```
+On observe que manger un éclair supplémentaire multiplie l’odds d’avoir eu de la nausée d’au moins exp(0.43) = 1.54 et d’au plus exp(0.66) = 1.93.  
+
+```{r}
+reg_gen_Vomi <- glm(Vomi~Eclair, family= binomial, data=Intoxications)
+reg_gen_Vomi
+```
+```{r}
+confint(reg_gen_Vomi)
+```
+Manger un éclair supplémentaire multiplie l’odds d’avoir eu des vomissements d’au moins exp(0.38) = 1.46 et d’au plus exp(0.60) = 1.82.
+
+```{r}
+reg_gen_Douleur <- glm(Douleur~Eclair, family= binomial, data=Intoxications)
+reg_gen_Douleur
+```
+```{r}
+confint(reg_gen_Douleur)
+
+```
+Manger un éclair supplémentaire multiplie l’odds d’avoir eu des douleurs d’au moins exp(0.30) = 1.35 et d’au plus exp(0.51) = 1.67. 
+```{r}
+reg_gen_Diarrhee <- glm(Diarrhee~Eclair, family= binomial, data=Intoxications)
+reg_gen_Diarrhee
+```
+
+```{r}
+confint(reg_gen_Diarrhee)
+```
+Manger un éclair supplémentaire multiplie l’odds d’avoir eu de la diahrrée d’au moins 
+exp(0.18) = 1.20 et d’au plus exp(0.36) = 1.43.  
+  
+Cette dernière partie nous permet de conclure à une influence d’une grande consommation 
+d’éclair sur l’apparition des différents symptômes.  
+En effet, pour chaque symptôme on observe que manger plus d’éclairs augmente l’odds d'avoir un symptôme. La consommation d’éclairs a donc provoqué un grand nombre d’intoxications alimentaires, après cette manifestation. 
