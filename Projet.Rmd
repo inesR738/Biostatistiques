@@ -257,11 +257,11 @@ g7 <- ggplot() +
 
 # Etude éthiologique
 
-Maintenant que nous savons que quasiment la moitié de la population est tombé malade après cette manifestation, nous allons tenter de savoir quels sont les facteurs qui ont ammené à cette intoxication. Nous allons le faire avec deux modèle de regression (logistique et polytomique ordonné)
+Maintenant que nous savons que quasiment la moitié de la population est tombé malade après cette manifestation, nous allons tenter de savoir quels sont les facteurs qui ont ammené à cette intoxication. Nous allons le faire avec deux modèle de régression (logistique et polytomique ordonné)
 
-## Regression logistique
+## Régression logistique
 
-Comme nous avons pu le voir dans la partie précédente, nous avons créé une variable $Malade$ comme variable qualitative codé par 0 ou 1, d'où l'utilisation d'une regression logistique.
+Comme nous avons pu le voir dans la partie précédente, nous avons créé une variable $Malade$ comme variable qualitative codé par 0 ou 1, d'où l'utilisation d'une régression logistique.
 
 ### Sélection du modèle
 
@@ -298,7 +298,7 @@ fitforw <- stepAIC(object = g,
 
 Le modèle que nous obtenons est le suivant: $$ Malade \sim Eclair + Sexe + Age + Eclair:Age + Sexe:Age$$
 
-Nous allons analyser la significativité des coefficients du modèle final que nous avons obtenu pour cette regression:
+Nous allons analyser la significativité des coefficients du modèle final que nous avons obtenu pour cette régression:
 
 ```{r, echo=FALSE}
 summary(fitforw)
@@ -336,7 +336,7 @@ Pour l'interaction entre le sexe et l'age nous avons: $$ \beta = log \left( \fra
 
 \newpage
 
-## Regression polytomique ordonnée
+## Régression polytomique ordonnée
 
 ### Création des classes
 
@@ -508,7 +508,7 @@ f <- polr(Symptomes ~ Eclair + Sexe + Age + Eclair:Sexe + Eclair:Age + Eclair:Se
 summary(f)
 ```
 
-Le modèle gardé est: $$Symptomes \sim Eclair + Sexe + Age + Eclair:Sexe + Eclair:Age + Eclair:Sexe:Age$$ Il est très semblable au modèle de regression logistique obtenu dans la partie précédente.
+Le modèle gardé est: $$Symptomes \sim Eclair + Sexe + Age + Eclair:Sexe + Eclair:Age + Eclair:Sexe:Age$$ Il est très semblable au modèle de régression logistique obtenu dans la partie précédente.
 
 On remarque que le critère AIC est plus élevé que celui du modèle précédent (1507 contre 1495), mais nous allons préféré ce modèle.
 
