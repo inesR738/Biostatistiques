@@ -530,7 +530,8 @@ g8 <- ggplot() +
   guides(fill = guide_legend(title = "Symptomes"))
 
 g8
-``
+```
+
 
 ```{r, echo=FALSE}
 Intoxications %>%
