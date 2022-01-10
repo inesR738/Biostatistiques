@@ -22,15 +22,14 @@ library(modelsummary)
 \newpage
 
 ```{r, echo=FALSE}
-Intoxications <- read_excel("Intoxications.xls") 
+Intoxications <- read_excel("Intoxications.xls")
 colnames(Intoxications) <- c("id", "Sexe", "Age", "Boeuf", "Oeuf", "Eclair", "Eau", "Nausee", "Vomi", "Douleur", "Diarrhee")
 ```
 
 # Introduction
 
-Notre jeu de données contient des données recensées sur les participants d'une grande manifestation en Inde en 1990.\
-Pour cela, les habitudes alimentaires sur ces individus ont été répertoriées. Suivant la problématique posée, différentes approches (méthodes) apprises en cours et en TP de biostatistiques seront mises en avant.\
-L'objectif principal sera de construire de potentiels modèle qui permettent d'expliquer et de constater les liens statistiques qui peuvent exister. Un grand échantillon des manifestants a donc été interrogé afin d'étudier l'impact de certains plats ou boissons vendus sur place et, a terme, de pouvoir définir le ou les responsables de ces intoxications.
+Notre jeu de données contient des données recensées sur les participants d'une grande manifestation en Inde en 1990.\ Suivant la problématique posée, différentes approches (méthodes) apprises en cours et en TP de biostatistiques seront mises en avant.\
+L'objectif principal sera de construire de potentiels modèles qui permettent d'expliquer et de constater les liens statistiques qui peuvent exister. Un grand échantillon des manifestants a donc été interrogé afin d'étudier l'impact de certains plats ou boissons vendus sur place et, a terme, de pouvoir définir le ou les responsables de ces intoxications.
 
 Notre table est composée de onze variables dont une variable identifiant (id), deux caractérisant l'individu (le sexe et l'âge), quatre concernent les aliments consommés lors de la manifestation (boeuf au curry, oeufs frits, eau et quantité d'éclair) et quatre concernent les symptômes ressentis par l'individu (nausée, vomissements, douleur(abdominale) et diarrhée).\
 1094 personnes font partie de notre échantillon.
@@ -74,28 +73,35 @@ Regardons si notre jeu de donnée contient des données manquantes :
 ```
 
 ```{r, echo=FALSE}
-Donn_manq <- Intoxications %>% 
+Donn_manq <- Intoxications %>%
   filter(Age == 99 |
-         Boeuf == 9 |
-         Oeuf == 9 |
-         Eclair == 90 |
-         Eclair == 80 |
-         Eau == 9) %>% 
-  mutate(Eclair = if_else(Eclair == 90,
-                          NA_real_,
-                          as.numeric(Eclair)),
-         Boeuf = if_else(Boeuf == 9,
-                          NA_integer_,
-                          as.integer(Boeuf)),
-         Oeuf = if_else(Oeuf == 9,
-                          NA_integer_,
-                          as.integer(Oeuf)),
-         Age = if_else(Age == 99,
-                          NA_integer_,
-                          as.integer(Boeuf)),
-         Eau = if_else(Eau == 9,
-                          NA_integer_,
-                          as.integer(Eau)))
+    Boeuf == 9 |
+    Oeuf == 9 |
+    Eclair == 90 |
+    Eclair == 80 |
+    Eau == 9) %>%
+  mutate(
+    Eclair = if_else(Eclair == 90,
+      NA_real_,
+      as.numeric(Eclair)
+    ),
+    Boeuf = if_else(Boeuf == 9,
+      NA_integer_,
+      as.integer(Boeuf)
+    ),
+    Oeuf = if_else(Oeuf == 9,
+      NA_integer_,
+      as.integer(Oeuf)
+    ),
+    Age = if_else(Age == 99,
+      NA_integer_,
+      as.integer(Boeuf)
+    ),
+    Eau = if_else(Eau == 9,
+      NA_integer_,
+      as.integer(Eau)
+    )
+  )
 ```
 
 Après recodage des données manquantes, on observe qu'il y a dans la table 183 individus avec au moins une donnée manquante. Parmis les 198 valeurs manquantes, il y en a 117 qui appartiennent à la question sur les éclairs.
@@ -105,26 +111,30 @@ On aurait pu remplacer les valeurs pour les individus ne se souvenant plus du no
 
 ```{r, echo=FALSE}
 Intoxications <- Intoxications %>%
-  filter(Age != 99,
-         Boeuf != 9,
-         Oeuf != 9,
-         Eclair != 90,
-         Eclair != 80,
-         Eau != 9) %>% 
-  mutate(Symptomes = Nausee + Vomi + Douleur + Diarrhee,
-         Sexe = as.factor(Sexe),
-         Nausee = as.factor(Nausee),
-         Vomi = as.factor(Vomi),
-         Douleur = as.factor(Douleur),
-         Diarrhee = as.factor(Diarrhee), 
-         Eclair = as.numeric(Eclair),
-         Boeuf = as.factor(Boeuf),
-         Oeuf = as.factor(Oeuf),
-         Eau = as.factor(Eau),
-         Malade = as.factor(if_else(Symptomes >= 1,
-                             1,
-                             0)))
-
+  filter(
+    Age != 99,
+    Boeuf != 9,
+    Oeuf != 9,
+    Eclair != 90,
+    Eclair != 80,
+    Eau != 9
+  ) %>%
+  mutate(
+    Symptomes = Nausee + Vomi + Douleur + Diarrhee,
+    Sexe = as.factor(Sexe),
+    Nausee = as.factor(Nausee),
+    Vomi = as.factor(Vomi),
+    Douleur = as.factor(Douleur),
+    Diarrhee = as.factor(Diarrhee),
+    Eclair = as.numeric(Eclair),
+    Boeuf = as.factor(Boeuf),
+    Oeuf = as.factor(Oeuf),
+    Eau = as.factor(Eau),
+    Malade = as.factor(if_else(Symptomes >= 1,
+      1,
+      0
+    ))
+  )
 ```
 
 Voici les 5 premières lignes de notre jeu de données :
@@ -146,9 +156,9 @@ Intoxications %>% summary()
 Nous allons d'abord observer la répartition des âges des hommes et des femmes au sein de l'échantillon.
 
 ```{r, echo=FALSE}
-ggplot(Intoxications, aes(group = Sexe, x = Sexe, y = Age, fill=Sexe)) +
- geom_boxplot() +
- ggtitle("Répartition des âges selon le sexe") +
+ggplot(Intoxications, aes(group = Sexe, x = Sexe, y = Age, fill = Sexe)) +
+  geom_boxplot() +
+  ggtitle("Répartition des âges selon le sexe") +
   scale_fill_discrete(labels = c("Femme", "Homme"))
 ```
 
@@ -158,17 +168,23 @@ Alors on observe une population plutôt jeune. Les femmes ont en moyenne 15 ans 
 Nous allons voir à présent les différences de consommations des plats mise en cause dans les intoxications alimentaires constatées.
 
 ```{r, echo=FALSE}
-c(Intoxications$Boeuf %>% as.integer() %>% -1 %>% sum(),
+c(
+  Intoxications$Boeuf %>% as.integer() %>% -1 %>% sum(),
   Intoxications$Oeuf %>% as.integer() %>% -1 %>% sum(),
-  Intoxications$Eau %>% as.integer() %>% -1 %>% sum())*100/nrow(Intoxications)
+  Intoxications$Eau %>% as.integer() %>% -1 %>% sum()
+) * 100 / nrow(Intoxications)
 ```
 
 On a donc dans notre jeu de données, 93% des gens qui ont consommé du boeuf et la même proportion qui ont consommé des oeufs et 97% des gens qui ont bu de l'eau.
 
 ```{r, echo=FALSE}
-sum(Intoxications$Boeuf %>% as.integer() %>% -1 & 
-      Intoxications$Oeuf %>% as.integer() %>% -1 & 
-      Intoxications$Eau %>% as.integer() %>% -1, na.rm=T)
+sum(Intoxications$Boeuf %>% as.integer() %>% -1 &
+  Intoxications$Oeuf %>%
+    as.integer() %>%
+    -1 &
+  Intoxications$Eau %>%
+    as.integer() %>%
+    -1, na.rm = T)
 ```
 
 Au sein de l'échantillon, chaque plat a été consommé par une large proportion d'individus.\
@@ -183,74 +199,144 @@ On a également, 830 personnes (Echantillon totale - personne n'ayant pas mangé
 Nous allons nous intéresser à présent à une analyse similaire sur les différents symptômes.
 
 ```{r, echo=FALSE}
-c(Intoxications$Nausee %>% as.integer() %>% -1 %>% sum(),
+c(
+  Intoxications$Nausee %>% as.integer() %>% -1 %>% sum(),
   Intoxications$Vomi %>% as.integer() %>% -1 %>% sum(),
   Intoxications$Douleur %>% as.integer() %>% -1 %>% sum(),
-  Intoxications$Diarrhee %>% as.integer() %>% -1 %>% sum())*100/nrow(Intoxications)
+  Intoxications$Diarrhee %>% as.integer() %>% -1 %>% sum()
+) * 100 / nrow(Intoxications)
 ```
 
 Chacun des symptômes ont été ressentis par 21 à 39% des personnes. Le symptôme le plus fréquent étant la nausée, le moins fréquent la diarrhée. 201 personnes soit presque 20% de l'échantillon ont ressenti tous les symptômes listés.
 
 ```{r, echo=FALSE}
-sum(Intoxications$Nausee %>% as.integer() %>% -1 & 
-      Intoxications$Vomi %>% as.integer() %>% -1 &
-      Intoxications$Douleur %>% as.integer() %>% -1 &
-      Intoxications$Diarrhee %>% as.integer() %>% -1, na.rm=T)
+sum(Intoxications$Nausee %>% as.integer() %>% -1 &
+  Intoxications$Vomi %>%
+    as.integer() %>%
+    -1 &
+  Intoxications$Douleur %>%
+    as.integer() %>%
+    -1 &
+  Intoxications$Diarrhee %>%
+    as.integer() %>%
+    -1, na.rm = T)
 ```
 
 170 personnes soit presque 15% de l'échantillon ont ressentis tous les symptômes.
 
 ```{r, echo=FALSE}
 g1 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Boeuf,
-                 fill = Malade))
+  geom_bar(
+    data = Intoxications,
+    aes(Boeuf,
+      fill = Malade
+    )
+  )
 
 g2 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Oeuf,
-                 fill = Malade))
+  geom_bar(
+    data = Intoxications,
+    aes(Oeuf,
+      fill = Malade
+    )
+  )
 
 g3 <- ggplot() +
-  geom_histogram(data = Intoxications,
-                 aes(Age,
-                 fill = Malade),
-                 binwidth = 5)
+  geom_histogram(
+    data = Intoxications,
+    aes(Age,
+      fill = Malade
+    ),
+    binwidth = 5
+  )
 
-g4 <- ggplot() + 
-  geom_histogram(data = Intoxications,
-                 aes(Eclair,
-                 fill = Malade),
-                 binwidth = 1)
+g4 <- ggplot() +
+  geom_histogram(
+    data = Intoxications,
+    aes(Eclair,
+      fill = Malade
+    ),
+    binwidth = 1
+  )
 
 g5 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Sexe,
-               fill = Malade))
+  geom_bar(
+    data = Intoxications,
+    aes(Sexe,
+      fill = Malade
+    )
+  )
 
 
-(g5 | g1 | g2) / 
+(g5 | g1 | g2) /
   g3 /
-  g4 + 
-  plot_layout(guides = 'collect')
+  g4 +
+  plot_layout(guides = "collect")
 ```
+
+```{r, echo=FALSE, fig.height=3}
+g1 <- ggplot() +
+  geom_bar(
+    data = Intoxications,
+    aes(Nausee,
+      fill = Malade
+    )
+  )
+
+g2 <- ggplot() +
+  geom_bar(
+    data = Intoxications,
+    aes(Diarrhee,
+      fill = Malade
+    )
+  )
+
+g3 <- ggplot() +
+  geom_bar(
+    data = Intoxications,
+    aes(Vomi,
+      fill = Malade
+    )
+  )
+
+g4 <- ggplot() +
+  geom_bar(
+    data = Intoxications,
+    aes(Douleur,
+      fill = Malade
+    )
+  )
+
+(g1 | g2) /
+  (g3 | g4) +
+  plot_layout(guides = "collect")
+```
+
 
 ```{r, echo=FALSE, fig.height=4}
 
-g6 <- ggplot() + 
-  geom_boxplot(data = Intoxications,
-               aes(x = Malade,
-                   y = Age,
-                   fill = Malade))
+g6 <- ggplot() +
+  geom_boxplot(
+    data = Intoxications,
+    aes(
+      x = Malade,
+      y = Age,
+      fill = Malade
+    )
+  )
 
-g7 <- ggplot() + 
-  geom_boxplot(data = Intoxications,
-               aes(x = Malade,
-                   y = Eclair,
-                   fill = Malade))
+g7 <- ggplot() +
+  geom_boxplot(
+    data = Intoxications,
+    aes(
+      x = Malade,
+      y = Eclair,
+      fill = Malade
+    )
+  )
 
-(g6 |g7) + 
-  plot_layout(guides = 'collect')
+(g6 | g7) +
+  plot_layout(guides = "collect")
 ```
 
 \newpage
@@ -270,10 +356,14 @@ Nous allons chercher le meilleur modèle possible pour expliquer cette variable 
 Commençons par la procédure descendante. La méthode descendante consiste à partir du modèle complet avec toutes les covariables et les intéractions entre elles, puis à chaque étapte d'enlever un terme du modèle (en commençant par les intéractions de plus haut degré)
 
 ```{r,results='hide', warning=FALSE}
-f <- stepAIC(object = glm(formula = Malade ~ Sexe * Eau * Boeuf * Oeuf * Age * Eclair,
-    family = "binomial", 
-    data = Intoxications),
-    direction = "backward")
+f <- stepAIC(
+  object = glm(
+    formula = Malade ~ Sexe * Eau * Boeuf * Oeuf * Age * Eclair,
+    family = "binomial",
+    data = Intoxications
+  ),
+  direction = "backward"
+)
 ```
 
 ```{r}
@@ -285,15 +375,20 @@ Nous obtenons que la méthode utilisée ne converge pas. Ce qui nous pose un pro
 Pour cette raison nous allons plutôt utiliser la méthode ascendante pour ce modèle. La méthode ascendante consiste à partir du modèle le plus basique possible (la variable expliquée en fonction de l'intercept) auquel nous allons ajouter les différentes covariables et potentiellement les interactions entre elles.
 
 ```{r, results='hide'}
-g <- glm(formula = Malade ~ 1,
-    family = "binomial", 
-    data = Intoxications)
+g <- glm(
+  formula = Malade ~ 1,
+  family = "binomial",
+  data = Intoxications
+)
 
-fitforw <- stepAIC(object = g,
-    direction = "forward",
-    scope = list(lower = g,
-                 upper = ~ Sexe * Age * Boeuf * Oeuf * Eau * Eclair))
-
+fitforw <- stepAIC(
+  object = g,
+  direction = "forward",
+  scope = list(
+    lower = g,
+    upper = ~ Sexe * Age * Boeuf * Oeuf * Eau * Eclair
+  )
+)
 ```
 
 Le modèle que nous obtenons est le suivant: $$ Malade \sim Eclair + Sexe + Age + Eclair:Age + Sexe:Age$$
@@ -312,12 +407,16 @@ CI <- as.data.frame(confint(fitforw))
 
 ```{r, echo=FALSE}
 ggplot() +
-  geom_hline(yintercept = 0, linetype = 'dashed', col = 'black') +
-  geom_errorbar(data = CI,
-                aes(x = row.names(CI),
-                    ymin = CI[,1],
-                    ymax = CI[,2],
-                    colour = row.names(CI))) +
+  geom_hline(yintercept = 0, linetype = "dashed", col = "black") +
+  geom_errorbar(
+    data = CI,
+    aes(
+      x = row.names(CI),
+      ymin = CI[, 1],
+      ymax = CI[, 2],
+      colour = row.names(CI)
+    )
+  ) +
   xlab("Covariables") +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.7))
 ```
@@ -344,49 +443,62 @@ Dans cette partie nous allons étudier l'influence de la consommation des diffé
 
 ```{r, echo=FALSE}
 g1 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Boeuf, fill = as.factor(Symptomes)),
-           position = "dodge") +
-  guides(fill=guide_legend(title="Symptomes"))
+  geom_bar(
+    data = Intoxications,
+    aes(Boeuf, fill = as.factor(Symptomes)),
+    position = "dodge"
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
 g2 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Oeuf, fill = as.factor(Symptomes)),
-           position = "dodge") +
-  guides(fill=guide_legend(title="Symptomes"))
+  geom_bar(
+    data = Intoxications,
+    aes(Oeuf, fill = as.factor(Symptomes)),
+    position = "dodge"
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
 g3 <- ggplot() +
-  geom_histogram(data = Intoxications,
-                 aes(Age, fill = as.factor(Symptomes)),
-                 binwidth = 5) +
-  guides(fill=guide_legend(title="Symptomes"))
+  geom_histogram(
+    data = Intoxications,
+    aes(Age, fill = as.factor(Symptomes)),
+    binwidth = 5
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
-g4 <- ggplot() + 
-  geom_histogram(data = Intoxications,
-                 aes(Eclair, fill = as.factor(Symptomes)),
-                 binwidth = 1) +
-  guides(fill=guide_legend(title="Symptomes"))
+g4 <- ggplot() +
+  geom_histogram(
+    data = Intoxications,
+    aes(Eclair, fill = as.factor(Symptomes)),
+    binwidth = 1
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
 g5 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Sexe, fill = as.factor(Symptomes)),
-           position = "dodge") +
-  guides(fill=guide_legend(title="Symptomes"))
+  geom_bar(
+    data = Intoxications,
+    aes(Sexe, fill = as.factor(Symptomes)),
+    position = "dodge"
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
-(g5 | g1 | g2 ) / 
-  ((g4 / g3)) + 
-  plot_layout(guides = 'collect')
+(g5 | g1 | g2) /
+  ((g4 / g3)) +
+  plot_layout(guides = "collect")
 ```
 
 ```{r, echo=FALSE, fig.height=2}
-Intoxications <- Intoxications %>% 
+Intoxications <- Intoxications %>%
   mutate(id = 1)
 
 g8 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(id,
-               fill = as.factor(Symptomes))) +
-  guides(fill=guide_legend(title = "Symptomes"))
+  geom_bar(
+    data = Intoxications,
+    aes(id,
+      fill = as.factor(Symptomes)
+    )
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
 g8
 ```
@@ -396,7 +508,7 @@ On remarque directement que pour certaines classes, nous avons très peu d'indiv
 Pour corriger ce problème, nous avons créé 3 classes (Sain, Peu malade et Très malade)
 
 ```{r, echo=FALSE, fig.height=2}
-Intoxications <- Intoxications %>% 
+Intoxications <- Intoxications %>%
   mutate(Symptomes = case_when(
     Symptomes == 0 ~ "Sain",
     Symptomes %in% c(1, 2) ~ "Peu malade",
@@ -404,21 +516,26 @@ Intoxications <- Intoxications %>%
     TRUE ~ ""
   ))
 
-Intoxications$Symptomes <- Intoxications$Symptomes %>% 
-  as.factor() %>% 
+Intoxications$Symptomes <- Intoxications$Symptomes %>%
+  as.factor() %>%
   ordered(c("Sain", "Peu malade", "Tres malade"))
 
 g8 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(id,
-               fill = as.factor(Symptomes))) +
-  guides(fill=guide_legend(title = "Symptomes"))
+  geom_bar(
+    data = Intoxications,
+    aes(id,
+      fill = as.factor(Symptomes)
+    )
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
 g8
-```
+``
 
 ```{r, echo=FALSE}
-Intoxications %>% pull(var = Symptomes) %>% summary()
+Intoxications %>%
+  pull(var = Symptomes) %>%
+  summary()
 ```
 
 Même si les nombre de personnes "Peu malade" reste peu élevé nous allons garder ces classes.
@@ -429,38 +546,48 @@ Regardons la distribution des individus en fonction de leur caractéristiques et
 
 ```{r, echo=FALSE}
 g1 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Boeuf, fill = Symptomes),
-           position = "dodge") +
-  guides(fill=guide_legend(title="Symptomes"))
+  geom_bar(
+    data = Intoxications,
+    aes(Boeuf, fill = Symptomes),
+    position = "dodge"
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
 g2 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Oeuf, fill = Symptomes),
-           position = "dodge") +
-  guides(fill=guide_legend(title="Symptomes"))
+  geom_bar(
+    data = Intoxications,
+    aes(Oeuf, fill = Symptomes),
+    position = "dodge"
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
 g3 <- ggplot() +
-  geom_histogram(data = Intoxications,
-                 aes(Age, fill = Symptomes),
-                 binwidth = 5) +
-  guides(fill=guide_legend(title="Symptomes"))
+  geom_histogram(
+    data = Intoxications,
+    aes(Age, fill = Symptomes),
+    binwidth = 5
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
-g4 <- ggplot() + 
-  geom_histogram(data = Intoxications,
-                 aes(Eclair, fill = Symptomes),
-                 binwidth = 1) +
-  guides(fill=guide_legend(title="Symptomes"))
+g4 <- ggplot() +
+  geom_histogram(
+    data = Intoxications,
+    aes(Eclair, fill = Symptomes),
+    binwidth = 1
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
 g5 <- ggplot() +
-  geom_bar(data = Intoxications,
-           aes(Sexe, fill = Symptomes),
-           position = "dodge") +
-  guides(fill=guide_legend(title="Symptomes"))
+  geom_bar(
+    data = Intoxications,
+    aes(Sexe, fill = Symptomes),
+    position = "dodge"
+  ) +
+  guides(fill = guide_legend(title = "Symptomes"))
 
-(g5 | g1 | g2 ) / 
-  ((g4 / g3)) + 
-  plot_layout(guides = 'collect')
+(g5 | g1 | g2) /
+  ((g4 / g3)) +
+  plot_layout(guides = "collect")
 ```
 
 ### Sélection du modèle
@@ -470,10 +597,14 @@ Nous allons utiliser la procédure ascendante en fonction du critère AIC comme 
 ```{r, results='hide'}
 g <- polr(Symptomes ~ 1, data = Intoxications)
 
-fitforw <- stepAIC(object = g,
-    direction = "forward",
-    scope = list(lower = g,
-                 upper = ~Sexe * Age * Boeuf * Oeuf * Eau * Eclair))
+fitforw <- stepAIC(
+  object = g,
+  direction = "forward",
+  scope = list(
+    lower = g,
+    upper = ~ Sexe * Age * Boeuf * Oeuf * Eau * Eclair
+  )
+)
 ```
 
 Nous obtenons le modèle suivant: $$ Symptomes \sim Eclair + Eau + Sexe + Age + Eclair:Eau + Eclair:Sexe + Sexe:Age + Eclair:Age + Eclair:Sexe:Age$$ Ce modèle est plus complexe que le modèle de régression logistique de la partie précedente, d'où son AIC plus élevé.
@@ -490,12 +621,16 @@ CI <- as.data.frame(confint(fitforw))
 
 ```{r, echo=FALSE}
 ggplot() +
-  geom_errorbar(data = CI,
-                aes(x = row.names(CI),
-                    ymin = CI[,1],
-                    ymax = CI[,2],
-                    colour = row.names(CI))) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_errorbar(
+    data = CI,
+    aes(
+      x = row.names(CI),
+      ymin = CI[, 1],
+      ymax = CI[, 2],
+      colour = row.names(CI)
+    )
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
   xlab("Covariables") +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.7))
 ```
@@ -503,7 +638,9 @@ ggplot() +
 Refaisons un modèle seulement avec les paramètres que l'on garde:
 
 ```{r}
-f <- polr(Symptomes ~ Eclair + Sexe + Age + Eclair:Sexe + Eclair:Age + Eclair:Sexe:Age, data = Intoxications)
+f <- polr(Symptomes ~ Eclair + Sexe + Age + Eclair:Sexe + Eclair:Age + Eclair:Sexe:Age,
+  data = Intoxications
+)
 
 summary(f)
 ```
@@ -513,19 +650,23 @@ Le modèle gardé est: $$Symptomes \sim Eclair + Sexe + Age + Eclair:Sexe + Ecla
 On remarque que le critère AIC est plus élevé que celui du modèle précédent (1507 contre 1495), mais nous allons préféré ce modèle.
 
 ```{r, echo=FALSE}
-CI <- CI %>% 
-  filter((CI[,1] > 0 & CI[,2] > 0) |
-           (CI[,1] < 0 & CI[,2] < 0))
+CI <- CI %>%
+  filter((CI[, 1] > 0 & CI[, 2] > 0) |
+    (CI[, 1] < 0 & CI[, 2] < 0))
 ```
 
 ```{r, echo=FALSE}
 ggplot() +
-  geom_errorbar(data = CI,
-                aes(x = row.names(CI),
-                    ymin = CI[,1],
-                    ymax = CI[,2],
-                    colour = row.names(CI))) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_errorbar(
+    data = CI,
+    aes(
+      x = row.names(CI),
+      ymin = CI[, 1],
+      ymax = CI[, 2],
+      colour = row.names(CI)
+    )
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
   xlab("Covariables") +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.7))
 ```
@@ -552,7 +693,7 @@ Pour cette partie, on considérera les personnes ne se souvenant plus du nombre 
 
 ```{r}
 attach(Intoxications)
-reg_gen_Nausee <- glm(Nausee~Eclair, family= binomial, data=Intoxications)
+reg_gen_Nausee <- glm(Nausee ~ Eclair, family = binomial, data = Intoxications)
 reg_gen_Nausee
 ```
 
@@ -563,7 +704,7 @@ confint(reg_gen_Nausee)
 On observe que manger un éclair supplémentaire multiplie l'odds d'avoir eu de la nausée d'au moins exp(0.43) = 1.54 et d'au plus exp(0.66) = 1.93.
 
 ```{r}
-reg_gen_Vomi <- glm(Vomi~Eclair, family= binomial, data=Intoxications)
+reg_gen_Vomi <- glm(Vomi ~ Eclair, family = binomial, data = Intoxications)
 reg_gen_Vomi
 ```
 
@@ -574,19 +715,18 @@ confint(reg_gen_Vomi)
 Manger un éclair supplémentaire multiplie l'odds d'avoir eu des vomissements d'au moins exp(0.38) = 1.46 et d'au plus exp(0.60) = 1.82.
 
 ```{r}
-reg_gen_Douleur <- glm(Douleur~Eclair, family= binomial, data=Intoxications)
+reg_gen_Douleur <- glm(Douleur ~ Eclair, family = binomial, data = Intoxications)
 reg_gen_Douleur
 ```
 
 ```{r}
 confint(reg_gen_Douleur)
-
 ```
 
 Manger un éclair supplémentaire multiplie l'odds d'avoir eu des douleurs d'au moins exp(0.30) = 1.35 et d'au plus exp(0.51) = 1.67.
 
 ```{r}
-reg_gen_Diarrhee <- glm(Diarrhee~Eclair, family= binomial, data=Intoxications)
+reg_gen_Diarrhee <- glm(Diarrhee ~ Eclair, family = binomial, data = Intoxications)
 reg_gen_Diarrhee
 ```
 
@@ -601,7 +741,7 @@ En effet, pour chaque symptôme on observe que manger plus d'éclairs augmente l
 
 \newpage
 
-Conclusion
+# Conclusion
 
 Cette étude nous a permis de nous mettre dans la peau de biostatisticien et de mettre en place des techniques qu'il peut utiliser.
 
