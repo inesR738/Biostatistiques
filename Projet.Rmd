@@ -608,7 +608,9 @@ fitforw <- stepAIC(
 )
 ```
 
-Nous obtenons le modèle suivant: $$ Symptomes \sim Eclair + Eau + Sexe + Age + Eclair:Eau + Eclair:Sexe + Sexe:Age + Eclair:Age + Eclair:Sexe:Age$$ Ce modèle est plus complexe que le modèle de régression logistique de la partie précedente, d'où son AIC plus élevé.
+Nous obtenons le modèle suivant: $$ Symptomes \sim Eclair + Eau + Sexe + Age + Eclair:Eau + Eclair:Sexe  + $$
+$$ Sexe:Age + Eclair:Age + Eclair:Sexe:Age$$
+Ce modèle est plus complexe que le modèle de régression logistique de la partie précedente, d'où son AIC plus élevé.
 
 ```{r, echo=FALSE}
 summary(fitforw)
@@ -686,7 +688,7 @@ Pour l'interaction entre la consommation d'éclair et l'age nous avons: $$ \beta
 
 Pour l'interaction entre la consommation d'éclair, le sexe et l'age nous avons, cela va diviser l'odds de Symptomes \< Peu malade par au moins $e^{0.005} = 1.001$ et par au plus $e^{0.057} = 1.059$. Cela va diviser l'odds de Symptomes \< Très malade par au moins $e^{0.005} = 1.001$ et par au plus $e^{0.057} = 1.059$.
 
-## Régression linéaire généralisée
+## Régressions linéaires généralisées
 
 Nous aimerions savoir si le fait de manger plus ou moins d'éclairs à eu une influence sur l'apparition des symptômes étudiés. Pour cela nous allons utiliser une régression linéaire généralisée expliquant chaque symptôme grâce à la variable éclair.
 
